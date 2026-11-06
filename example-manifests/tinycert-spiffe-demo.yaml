@@ -49,7 +49,7 @@ spec:
           - podCertificate:
               signerName: ahmedtd.github.io/tinycert-spiffe
               keyType: ECDSAP256
-              credentialBundlePath: credential-bundle.private-key.pem
+              credentialBundlePath: credential-bundle.private-key.x509.pem
           - clusterTrustBundle:
               signerName: ahmedtd.github.io/tinycert-spiffe
               labelSelector:
@@ -57,7 +57,7 @@ spec:
                   "ahmedtd.github.io/tinycert-canarying": "live"
                   "ahmedtd.github.io/tinycert-workload-trust-domain": "cluster.local"
                   "ahmedtd.github.io/tinycert-peer-trust-domain": "cluster.local"
-              path: cluster.local.spiffe-trust-bundle.pem
+              path: cluster.local.spiffe-trust-bundle.x509.pem
       restartPolicy: Always
 ---
 apiVersion: v1
@@ -119,7 +119,7 @@ spec:
           - podCertificate:
               signerName: ahmedtd.github.io/tinycert-spiffe
               keyType: ECDSAP256
-              credentialBundlePath: credential-bundle.private-key.pem
+              credentialBundlePath: credential-bundle.private-key.x509.pem
           - clusterTrustBundle:
               signerName: ahmedtd.github.io/tinycert-spiffe
               labelSelector:
@@ -127,4 +127,4 @@ spec:
                   "ahmedtd.github.io/tinycert-canarying": "live"
                   "ahmedtd.github.io/tinycert-workload-trust-domain": "cluster.local"
                   "ahmedtd.github.io/tinycert-peer-trust-domain": "cluster.local"
-              path: cluster.local.spiffe-trust-bundle.pem
+              path: cluster.local.spiffe-trust-bundle.x509.pem

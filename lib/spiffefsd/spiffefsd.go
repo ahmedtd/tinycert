@@ -12,6 +12,24 @@ import (
 	"path/filepath"
 )
 
+const (
+	// CredentialBundleFileName is the name of the credential bundle file within
+	// a credential folder, as defined in section 2 of the SPIFFE Filesystem
+	// Delivery standard.
+	CredentialBundleFileName = "credential-bundle.private-key.x509.pem"
+
+	// TrustBundleFileSuffix is appended to a trust domain name to form the name
+	// of that trust domain's trust bundle file within a credential folder, as
+	// defined in section 2.2 of the SPIFFE Filesystem Delivery standard.
+	TrustBundleFileSuffix = ".spiffe-trust-bundle.x509.pem"
+)
+
+// TrustBundleFileName returns the name of the trust bundle file for the given
+// trust domain.
+func TrustBundleFileName(trustDomain string) string {
+	return trustDomain + TrustBundleFileSuffix
+}
+
 type CredentialFolder struct {
 	Path string
 
@@ -52,9 +70,9 @@ func (f *CredentialFolder) GetClientCertificate(_ *tls.CertificateRequestInfo) (
 }
 
 func (f *CredentialFolder) GetCertificate(_ *tls.ClientHelloInfo) (*tls.Certificate, error) {
-	credentialBundleBytes, err := os.ReadFile(filepath.Join(f.Path, "credential-bundle.private-key.pem"))
+	credentialBundleBytes, err := os.ReadFile(filepath.Join(f.Path, CredentialBundleFileName))
 	if err != nil {
-		return nil, fmt.Errorf("while reading credential-bundle.private-key.pem: %w", err)
+		return nil, fmt.Errorf("while reading %s: %w", CredentialBundleFileName, err)
 	}
 
 	cert := &tls.Certificate{}
@@ -161,7 +179,7 @@ func (f *CredentialFolder) AuthenticatePeer(peerCertificates []*x509.Certificate
 
 	// TODO: Defend against path escapes in the peer's trust domain.
 	peerTrustDomain := leafCert.URIs[0].Host
-	peerTrustBundleFile := peerTrustDomain + ".spiffe-trust-bundle.pem"
+	peerTrustBundleFile := TrustBundleFileName(peerTrustDomain)
 	peerTrustBundleBytes, err := os.ReadFile(filepath.Join(f.Path, peerTrustBundleFile))
 	if err != nil {
 		return nil, fmt.Errorf("while reading trust bundle for %q: %w", peerTrustDomain, err)
