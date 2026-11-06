@@ -7,7 +7,7 @@ import (
 	"log/slog"
 	"path/filepath"
 
-	"github.com/ahmedtd/tinycert/lib/localca"
+	"github.com/ahmedtd/tinycert/internal/localca"
 	"github.com/google/subcommands"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

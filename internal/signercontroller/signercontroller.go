@@ -10,7 +10,7 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/ahmedtd/tinycert/lib/rendezvous"
+	"github.com/ahmedtd/tinycert/internal/rendezvous"
 	certsv1beta1 "k8s.io/api/certificates/v1beta1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"

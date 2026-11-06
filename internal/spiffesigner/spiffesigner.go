@@ -11,8 +11,8 @@ import (
 	"path"
 	"time"
 
-	"github.com/ahmedtd/tinycert/lib/localca"
-	"github.com/ahmedtd/tinycert/lib/signercontroller"
+	"github.com/ahmedtd/tinycert/internal/localca"
+	"github.com/ahmedtd/tinycert/internal/signercontroller"
 	certsv1beta1 "k8s.io/api/certificates/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
