@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"crypto/tls"
 	"flag"
 	"fmt"
 	"log"
@@ -12,7 +11,6 @@ import (
 
 	"github.com/ahmedtd/tinycert/lib/spiffefsd"
 	"github.com/google/subcommands"
-	"k8s.io/klog/v2"
 )
 
 type DemoServerCommand struct {
@@ -60,15 +58,12 @@ func (c *DemoServerCommand) do(ctx context.Context) error {
 	serveMux.HandleFunc("GET /healthz", c.handleGetHealthz)
 	serveMux.HandleFunc("GET /spiffe-echo", c.handleGetSPIFFEEcho)
 
-	tlsConfig := &tls.Config{}
-	c.spiffeCredentialProvider.PrepareServerTLSConfig(tlsConfig)
-
 	server := &http.Server{
 		Addr: c.listen,
 
 		Handler: serveMux,
 
-		TLSConfig: tlsConfig,
+		TLSConfig: c.spiffeCredentialProvider.ServerTLSConfig(),
 
 		ReadTimeout:    30 * time.Second,
 		WriteTimeout:   30 * time.Second,
@@ -97,7 +92,7 @@ func (c *DemoServerCommand) handleGetSPIFFEEcho(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	peerInfo, err := c.spiffeCredentialProvider.AuthenticatePeer(r.TLS.PeerCertificates)
+	peerInfo, err := c.spiffeCredentialProvider.AuthenticateSPIFFEPeer(r.TLS.PeerCertificates)
 	if err != nil {
 		slog.ErrorContext(ctx, "Error while authenticating peer SPIFFE credential", slog.Any("err", err))
 		http.Error(w, "SPIFFE credential unverifiable", http.StatusUnauthorized)
@@ -112,6 +107,6 @@ func (c *DemoServerCommand) handleGetSPIFFEEcho(w http.ResponseWriter, r *http.R
 	slog.InfoContext(ctx, "Authenticated peer", slog.Any("peer", peerInfo.SPIFFEURI.String()))
 
 	if _, err := w.Write([]byte("Peer Identity: " + peerInfo.SPIFFEURI.String())); err != nil {
-		klog.ErrorS(err, "Error while writing response")
+		slog.ErrorContext(ctx, "Error while writing response", slog.Any("err", err))
 	}
 }

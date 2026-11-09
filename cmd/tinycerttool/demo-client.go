@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"crypto/tls"
 	"flag"
 	"fmt"
 	"io"
@@ -64,12 +63,9 @@ func (c *DemoClientCommand) do(ctx context.Context) error {
 	spiffeCredProvider.StaticServerAuthorization = map[string]string{}
 	spiffeCredProvider.StaticServerAuthorization[fetchURLParsed.Host] = c.serverSPIFFEID
 
-	tlsConfig := &tls.Config{}
-	spiffeCredProvider.PrepareClientTLSConfig(tlsConfig)
-
 	client := &http.Client{
 		Transport: &http.Transport{
-			TLSClientConfig: tlsConfig,
+			TLSClientConfig: spiffeCredProvider.ClientTLSConfig(),
 		},
 	}
 
