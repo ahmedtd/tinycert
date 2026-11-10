@@ -22,17 +22,11 @@ kind create cluster --image=kindest/node:latest --config=kind/kind-config.yaml
 ### Build and Deploy
 
 The images in this repository are built with [ko](https://ko.build/), which
-simplifies building images and deploying manifests.  Follow the [installation
-instructions](http://ko.build/install/) to install it.
+simplifies building images and deploying manifests.
 
-Make sure that you pick a target container repository according to ko's [Getting
-Started guide](https://ko.build/get-started/), and ensure that you have exported
-the KO_DOCKER_REPO environment variable (or set it on each of the commands
-below).
-
-You can then build and deploy the signer controller:
+Build and deploy the signer controller:
 ```
-ko apply -f controller-manifests
+KO_DOCKER_REPO=<your-repo> go tool ko apply -f controller-manifests
 ```
 
 The signer controller will crashloop until you create the root certificates and
@@ -45,7 +39,7 @@ go run ./cmd/tinycerttool make-ca-pool-secret --namespace tinycert-system --name
 If you like, you can now deploy some example applications that use certificates
 issued by the signer controller in different configurations.
 ```
-ko apply -f example-manifests/
+KO_DOCKER_REPO=<your-repo> go tool ko apply -f example-manifests/
 ```
 
 ## Signers
