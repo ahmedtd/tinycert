@@ -11,7 +11,7 @@ import (
 
 	"github.com/ahmedtd/tinycert/internal/localca"
 	"github.com/ahmedtd/tinycert/internal/signercontroller"
-	certsv1beta1 "k8s.io/api/certificates/v1beta1"
+	certsv1 "k8s.io/api/certificates/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -39,7 +39,7 @@ func (h *Impl) SignerName() string {
 	return Name
 }
 
-func (h *Impl) DesiredClusterTrustBundles() []*certsv1beta1.ClusterTrustBundle {
+func (h *Impl) DesiredClusterTrustBundles() []*certsv1.ClusterTrustBundle {
 	name := CTBPrefix + "primary-bundle"
 
 	wantTrustBundle := bytes.Buffer{}
@@ -51,20 +51,20 @@ func (h *Impl) DesiredClusterTrustBundles() []*certsv1beta1.ClusterTrustBundle {
 		_, _ = wantTrustBundle.Write(block)
 	}
 
-	wantCTB := &certsv1beta1.ClusterTrustBundle{
+	wantCTB := &certsv1.ClusterTrustBundle{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
 			Labels: map[string]string{
 				"ahmedtd.github.io/tinycert-canarying": "live",
 			},
 		},
-		Spec: certsv1beta1.ClusterTrustBundleSpec{
+		Spec: certsv1.ClusterTrustBundleSpec{
 			SignerName:  Name,
 			TrustBundle: wantTrustBundle.String(),
 		},
 	}
 
-	return []*certsv1beta1.ClusterTrustBundle{
+	return []*certsv1.ClusterTrustBundle{
 		wantCTB,
 	}
 }
@@ -73,7 +73,7 @@ func (h *Impl) CAPool() *localca.Pool {
 	return h.caPool
 }
 
-func (h *Impl) MakeCert(ctx context.Context, notBefore, notAfter time.Time, pcr *certsv1beta1.PodCertificateRequest) ([]*x509.Certificate, error) {
+func (h *Impl) MakeCert(ctx context.Context, notBefore, notAfter time.Time, pcr *certsv1.PodCertificateRequest) ([]*x509.Certificate, error) {
 	// TODO: Switch from live reads to indexer
 
 	// If our signer had a policy about which pods are allowed to request

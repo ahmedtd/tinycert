@@ -11,14 +11,14 @@ import (
 	"time"
 
 	"github.com/ahmedtd/tinycert/internal/rendezvous"
-	certsv1beta1 "k8s.io/api/certificates/v1beta1"
+	certsv1 "k8s.io/api/certificates/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	certinformersv1beta1 "k8s.io/client-go/informers/certificates/v1beta1"
+	certinformersv1 "k8s.io/client-go/informers/certificates/v1"
 	"k8s.io/client-go/kubernetes"
-	certlistersv1beta1 "k8s.io/client-go/listers/certificates/v1beta1"
+	certlistersv1 "k8s.io/client-go/listers/certificates/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/utils/clock"
@@ -27,8 +27,8 @@ import (
 
 type SignerImpl interface {
 	SignerName() string
-	DesiredClusterTrustBundles() []*certsv1beta1.ClusterTrustBundle
-	MakeCert(context.Context, time.Time, time.Time, *certsv1beta1.PodCertificateRequest) ([]*x509.Certificate, error)
+	DesiredClusterTrustBundles() []*certsv1.ClusterTrustBundle
+	MakeCert(context.Context, time.Time, time.Time, *certsv1.PodCertificateRequest) ([]*x509.Certificate, error)
 }
 
 type Hasher interface {
@@ -50,7 +50,7 @@ type Controller struct {
 
 // New creates a new Controller.
 func New(clock clock.PassiveClock, handler SignerImpl, kc kubernetes.Interface, hasher Hasher) *Controller {
-	pcrInformer := certinformersv1beta1.NewFilteredPodCertificateRequestInformer(kc, metav1.NamespaceAll, 24*time.Hour, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+	pcrInformer := certinformersv1.NewFilteredPodCertificateRequestInformer(kc, metav1.NamespaceAll, 24*time.Hour, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
 		func(opts *metav1.ListOptions) {
 		},
 	)
@@ -126,7 +126,7 @@ func (c *Controller) processNextWorkItem(ctx context.Context) bool {
 		return true
 	}
 
-	pcr, err := certlistersv1beta1.NewPodCertificateRequestLister(c.pcrInformer.GetIndexer()).PodCertificateRequests(namespace).Get(name)
+	pcr, err := certlistersv1.NewPodCertificateRequestLister(c.pcrInformer.GetIndexer()).PodCertificateRequests(namespace).Get(name)
 	if k8serrors.IsNotFound(err) {
 		c.pcrQueue.Forget(key)
 		return true
@@ -159,7 +159,7 @@ func (c *Controller) processNextWorkItem(ctx context.Context) bool {
 	return true
 }
 
-func (c *Controller) handlePCR(ctx context.Context, pcr *certsv1beta1.PodCertificateRequest) error {
+func (c *Controller) handlePCR(ctx context.Context, pcr *certsv1.PodCertificateRequest) error {
 	if pcr.Spec.SignerName != c.handler.SignerName() {
 		// Return nil, since we are not going to magically start supporting this
 		// signer name by retaining the cert in the workqueue.
@@ -208,7 +208,7 @@ func (c *Controller) handlePCR(ctx context.Context, pcr *certsv1beta1.PodCertifi
 	pcr = pcr.DeepCopy()
 	pcr.Status.Conditions = []metav1.Condition{
 		{
-			Type:               certsv1beta1.PodCertificateRequestConditionTypeIssued,
+			Type:               certsv1.PodCertificateRequestConditionTypeIssued,
 			Status:             metav1.ConditionTrue,
 			Reason:             "Reason",
 			Message:            "Issued",
@@ -220,7 +220,7 @@ func (c *Controller) handlePCR(ctx context.Context, pcr *certsv1beta1.PodCertifi
 	pcr.Status.BeginRefreshAt = ptr.To(metav1.NewTime(beginRefreshAt))
 	pcr.Status.NotAfter = ptr.To(metav1.NewTime(notAfter))
 
-	_, err = c.kc.CertificatesV1beta1().PodCertificateRequests(pcr.ObjectMeta.Namespace).UpdateStatus(ctx, pcr, metav1.UpdateOptions{})
+	_, err = c.kc.CertificatesV1().PodCertificateRequests(pcr.ObjectMeta.Namespace).UpdateStatus(ctx, pcr, metav1.UpdateOptions{})
 	if err != nil {
 		return fmt.Errorf("while updating PodCertificateRequest: %w", err)
 	}
@@ -239,7 +239,7 @@ func (c *Controller) ensureBundle(ctx context.Context) {
 	for _, wantCTB := range wantCTBs {
 		ctb, err := c.kc.CertificatesV1beta1().ClusterTrustBundles().Get(ctx, wantCTB.ObjectMeta.Name, metav1.GetOptions{})
 		if k8serrors.IsNotFound(err) {
-			_, err = c.kc.CertificatesV1beta1().ClusterTrustBundles().Create(ctx, wantCTB, metav1.CreateOptions{})
+			_, err = c.kc.CertificatesV1().ClusterTrustBundles().Create(ctx, wantCTB, metav1.CreateOptions{})
 			if err != nil {
 				slog.ErrorContext(ctx, "Error while creating ClusterTrustBundle",
 					slog.String("err", err.Error()),
