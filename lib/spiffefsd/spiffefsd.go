@@ -399,9 +399,9 @@ type loadedState struct {
 }
 
 func loadCredsFromBundle(path string) (*tls.Certificate, error) {
-	credentialBundleBytes, err := os.ReadFile(filepath.Join(path, SPIFFECredentialBundleFileName))
+	credentialBundleBytes, err := os.ReadFile(filepath.Join(path))
 	if err != nil {
-		return nil, fmt.Errorf("while reading %s: %w", SPIFFECredentialBundleFileName, err)
+		return nil, fmt.Errorf("while reading %s: %w", path, err)
 	}
 
 	cert := &tls.Certificate{}
