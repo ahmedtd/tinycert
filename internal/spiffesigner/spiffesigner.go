@@ -81,7 +81,7 @@ func (h *Impl) MakeCert(ctx context.Context, notBefore, notAfter time.Time, pcr 
 	spiffeURI := &url.URL{
 		Scheme: "spiffe",
 		Host:   h.spiffeTrustDomain,
-		Path:   path.Join("ns", pcr.ObjectMeta.Namespace, "sa", pcr.Spec.ServiceAccountName),
+		Path:   path.Join("service-account", pcr.ObjectMeta.Namespace, pcr.Spec.ServiceAccountName),
 	}
 
 	template := &x509.Certificate{

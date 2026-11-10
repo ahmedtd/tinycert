@@ -100,7 +100,7 @@ spec:
         - https-client
         - --fetch-url=https://server.tinycert-spiffe-demo.svc/spiffe-echo
         - --spiffe-credential-folder=/run/tinycert-spiffe
-        - --server-spiffe-id=spiffe://cluster.local/ns/tinycert-spiffe-demo/sa/default
+        - --server-spiffe-id=spiffe://cluster.local/service-account/tinycert-spiffe-demo/default
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:

@@ -74,7 +74,7 @@ These certificates cannot meaningfully be used as client certificates.
 
 ### ahmedtd.github.io/tinycert-spiffe
 
-This signer issues SPIFFE certificates to pods, with SPIFFE identities of the form `spiffe://<trust-domain>/ns/<pod-namespace>/sa/<pod-service-account>`.
+This signer issues SPIFFE certificates to pods, with SPIFFE identities of the form `spiffe://<trust-domain>/service-account/<pod-namespace>/<pod-service-account>`.
 * `trust-domain` is a configurable value for the SPIFFE trust domain.  In the
   demo, it defaults to `cluster.local`, but in a real deployment you will need
   to choose a unique value that makes sense, especially if you are expecting
